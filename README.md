@@ -3,4 +3,4 @@ open-source implementation of spotify
 
 ### TODO
 
-[] - Decrypt widevine
+[ ] - Decrypt widevine
