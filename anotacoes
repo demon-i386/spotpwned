@@ -1,0 +1,409 @@
+_unauthServerCertificateBase = "https://spclient.wg.spotify.com"
+
+ return this._requestServerCertificate("".concat(this._unauthServerCertificateBase, "/").concat(license_server, "-license"))
+
+
+                _requestServerCertificate(e) {
+                    let t = !(arguments.length > 1 && void 0 !== arguments[1]) || arguments[1];
+                    if (this._pendingCertificateRequest)
+                        return this._pendingCertificateRequest;
+                    return this._transport.request("".concat(e, "/v1/application-certificate"), {
+                        authorize: t,
+                        responseType: "arraybuffer",
+                        parseResponseHeaders: !0,
+                        retry: {
+                            condition: (e,t)=>e.getStatusFamily() === t.SERVER_ERROR
+                        }
+                    }).then((e=>{
+                        var t;
+                        if (!e.body)
+                            throw new TypeError("Response body is invalid");
+                        this._pendingCertificateRequest = null;
+                        let n = 3600;
+                        const i = null === (t = e.headers) || void 0 === t ? void 0 : t.get("cache-control");
+                        if (i) {
+                            const e = i.match(/(?:^|,|\s)max-age=(\d+)(?:,|$)/);
+                            e && e[1] && (n = 1e3 * parseInt(e[1], 10))
+                        }
+                        return this._certificate = {
+                            expiry: Date.now() + (n - 600),
+                            contents: e.body
+                        },
+                        this._certificate
+                    }
+                    ))
+                }
+
+
+     _trySetServerCertificate(license_server, t) {
+                    const n = this._certificate;
+                    return (n && n.expiry > Date.now() ? Promise.resolve(n) : this._requestServerCertificate(e)).then((e=>t.setServerCertificate(e.contents))).then((()=>this)).catch((e=>(G.warn("Error from setting server certificate", e),
+                    this)))
+                }
+
+    return !!this._protection && !!this._psshBox
+     this._psshBox = this._parsePSSHBox(n)
+      _testMediaKeys(e) {
+                    return new Promise((t=>{
+                        t(e.createMediaKeys())
+                    }
+                    )).then((t=>{
+                        if (!t)
+                            return Promise.reject(v.fatal(m.D.EME_MEDIA_KEYS_NOT_SUPPORTED, "Cannot create MediaKeys from KeySystemAccess"));
+                        e.keySystem === a.FAIRPLAY && t.setServerCertificate(new ArrayBuffer(0));
+                        try {
+                            if (!t.createSession())
+                                throw new Error("")
+                        } catch (n) {
+                            const {message: e} = n;
+                            return Promise.reject(v.fatal(m.D.EME_MEDIA_KEY_SESSION_NOT_SUPPORTED, e || "Cannot create MediaKeySession from KeySystemAccess"))
+                        }
+                        return Promise.resolve(e)
+                    }
+                    ), (e=>(G.error(e.name),
+                    Promise.reject(v.fatal(m.D.EME_MEDIA_KEYS_NOT_SUPPORTED, e.message || "Unknown error")))))
+                }
+
+     createMediaKeys(e) {
+                    return this._keySystemDeferred.promise.then((e=>e.createMediaKeys())).then((t=>Promise.all([e.setMediaKeys(t), t]))).then((t=>{
+                        let[n,i] = t;
+                        if (!e.mediaKeys)
+                            throw new v(m.D.EME_PLAYER_MEDIA_KEYS_SETTING_FAILED,"Failed to set MediaKeys on HTMLMediaElement");
+                        return this._configuration.promise.then((()=>{
+                            const e = this._keySystemSettings;
+                            return e && !this._noServerCertificate && e.withCertificate ? this._trySetServerCertificate(e.licenseServer, i) : this
+                        }
+                        ))
+                    }
+                    ))
+                }
+
+
+         case "widevine":
+                case "playready":
+                this._protection = "cenc";
+                try {
+                    this._psshBox = this._parsePSSHBox(n)
+                } catch (p) {
+                        return s = new g(m.D.FILE_MALFORMED_PSSH,"Invalid PSSH value."),
+                        s.track = this.toLogJSON(),
+                        Promise.reject(s)
+                }
+                break;
+        case "fairplay":
+                this._protection = "hls",
+                this._psshBox = new Uint8Array([]);
+                try {
+                    this._assetId = this._parseAssetID(n)
+                } catch (p) {
+                        return s = new g(m.D.FILE_MALFORMED_PSSH,"Invalid PSSH value."),
+                        s.track = this.toLogJSON(),
+                        Promise.reject(s)
+                }
+                break;
+
+
+                            const M = {
+                [a.WIDEVINE]: {
+                    commonName: "widevine",
+                    licenseServer: "https://@webgate/widevine-license",
+                    withCertificate: !0,
+                    pssh_field: {
+                        audio: "pssh_widevine",
+                        video: "encryption_data"
+                    }
+                },
+                [a.PLAYREADY]: {
+                    commonName: "playready",
+                    licenseServer: "https://@webgate/playready-license",
+                    withCertificate: !1,
+                    pssh_field: {
+                        audio: "pssh_playready",
+                        video: "encryption_data"
+                    }
+                },
+                [a.PLAYREADY_HARDWARE]: {
+                    commonName: "playready",
+                    licenseServer: "https://@webgate/playready-license",
+                    withCertificate: !1,
+                    pssh_field: {
+                        audio: "pssh_playready",
+                        video: "encryption_data"
+                    }
+                },
+                [a.FAIRPLAY]: {
+                    commonName: "fairplay",
+                    licenseServer: "https://@webgate/fairplay-license",
+                    withCertificate: !0,
+                    pssh_field: {
+                        audio: "pssh_fairplay",
+                        video: "asset_id"
+                    }
+                },
+                [a.INVALID_SPOTIFY_KEY]: {
+                    commonName: "spotify-invalid",
+                    licenseServer: "https://@webgate",
+                    withCertificate: !1,
+                    pssh_field: {
+                        audio: "pssh_invalid",
+                        video: "encryption_data"
+                    }
+                }
+            }
+
+
+                          , F = [{
+                label: "video-sw-decode",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/webm; codecs="opus"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'audio/mp4; codecs="flac"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }],
+                videoCapabilities: [{
+                    contentType: 'video/webm; codecs="vp9"',
+                    robustness: "SW_SECURE_DECODE"
+                }, {
+                    contentType: 'video/webm; codecs="vp8"',
+                    robustness: "SW_SECURE_DECODE"
+                }, {
+                    contentType: 'video/mp4; codecs="avc1.4d401f"',
+                    robustness: "SW_SECURE_DECODE"
+                }, {
+                    contentType: 'video/mp2t; codecs="avc1.4d401f"',
+                    robustness: "SW_SECURE_DECODE"
+                }],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "video-sw-crypto",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/webm; codecs="opus"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'audio/mp4; codecs="flac"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }],
+                videoCapabilities: [{
+                    contentType: 'video/webm; codecs="vp9"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'video/webm; codecs="vp8"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'video/mp4; codecs="avc1.4d401f"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'video/mp2t; codecs="avc1.4d401f"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "video-no-robustness",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/webm; codecs="opus"',
+                    robustness: ""
+                }, {
+                    contentType: 'audio/mp4; codecs="flac"',
+                    robustness: ""
+                }, {
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: ""
+                }],
+                videoCapabilities: [{
+                    contentType: 'video/webm; codecs="vp9"',
+                    robustness: ""
+                }, {
+                    contentType: 'video/webm; codecs="vp8"',
+                    robustness: ""
+                }, {
+                    contentType: 'video/mp4; codecs="avc1.4d401f"',
+                    robustness: ""
+                }, {
+                    contentType: 'video/mp2t; codecs="avc1.4d401f"',
+                    robustness: ""
+                }],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "audio-flac-sw-crypto",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/mp4; codecs="flac"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }, {
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }],
+                videoCapabilities: [],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "audio-flac-no-robustness",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/mp4; codecs="flac"',
+                    robustness: ""
+                }, {
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: ""
+                }],
+                videoCapabilities: [],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "audio-sw-crypto",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: "SW_SECURE_CRYPTO"
+                }],
+                videoCapabilities: [],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }, {
+                label: "audio-no-robustness",
+                initDataTypes: ["cenc"],
+                audioCapabilities: [{
+                    contentType: 'audio/mp4; codecs="mp4a.40.2"',
+                    robustness: ""
+                }],
+                videoCapabilities: [],
+                distinctiveIdentifier: "optional",
+                persistentState: "optional",
+                sessionTypes: ["temporary"]
+            }];
+
+
+                      _parsePSSHBox(e) {
+                    const t = Z.Base64.decode(e)
+                      , n = new Uint8Array(t.length);
+                    for (let i = 0, a = t.length; i < a; i++)
+                        n[i] = t.charCodeAt(i);
+                    return n
+                }
+
+
+                                getInitParams() {
+                    const e = {
+                        keySystem: this._keySystem,
+                        initDataType: this._protection,
+                        initData: this._psshBox,
+                        licenseServer: null
+                    };
+                    return Promise.resolve(e)
+                }
+                getKeySystem() {
+                    return this._keySystem
+                }
+                getLicenseEndpoint() {
+                    return this._licenseEndpoint
+                }
+
+
+                      isProtected() {
+                    return !!this._protection && !!this._psshBox
+                }
+
+                 _loadProtectedTrack(e, t) {
+                    if (!(this._currentContent && this._player && this._currentContent instanceof ve))
+                        return Promise.resolve(!1);
+                    const n = this._currentContent;
+                    Re.info("_loadProtectedTrack", n.getURI());
+                    const a = ()=>this._requestLicense(t).then((()=>{
+                        this._playId === t && (this._licenseRequested = !0,
+                        this._disableBufferingBeforeLicense && this._onTimeUpdate())
+                    }
+                    ));
+                    this._disableLicensePrefetch ? this.once(i.INTERNAL_ENCRYPTED, a) : this._buffer.once(i.BUFFER_SOURCE_OPEN, a),
+                    this._player.src = URL.createObjectURL(this._buffer.getMediaSource()),
+                    this._tracker.trackBufferLoadStart();
+                    const r = n.getFragmentForTime(e.position);
+                    let s = null;
+                    return r === n.getFirstFragment() ? (Re.info("Appending combined init and playable fragment."),
+                    s = this._buffer.appendFragment(n, n.getHeadFragment())) : (Re.info("Appending split init and playable fragment."),
+                    s = this._buffer.appendFragment(n, r)),
+                    s.then(this._onAppendedHeadSegment(t)).then((()=>Promise.resolve(t === this._playId)))
+                }
+
+                _onEncrypted(e) {
+                    Re.info("Got Encrypted event");
+                    this._currentContent && this.emitSync(i.INTERNAL_ENCRYPTED, {
+                        initData: e.initData,
+                        fromPolyfill: !!e.fromPolyfill
+                    })
+                }
+
+                 _loadHLSProtectedTrack(e, t) {
+                    if (Re.info("Load HLS Protected Track"),
+                    !this._player || !this._currentContent)
+                        return !1;
+                    const n = this._currentContent.getResolvedURL();
+                    if (!n)
+                        throw new g(m.D.FILE_NOT_RESOLVED,"Cannot load HLS protected track: File not resolved.");
+                    const a = e=>{
+                        e.data.fromPolyfill && (this.removeListener(i.INTERNAL_ENCRYPTED, a),
+                        this._requestLicense(t, {
+                            initData: e.data.initData
+                        }))
+                    }
+                    ;
+                    this.on(i.INTERNAL_ENCRYPTED, a);
+                    const r = this._currentContent;
+                    if (r instanceof pe) {
+                        const e = r.getVideoProfile()
+                          , t = r.getAudioProfile();
+                        this._tracker.trackVideoLoadStart({
+                            bitrate: null == e ? void 0 : e.video_bitrate,
+                            audioProfile: null != t ? t : void 0,
+                            videoProfile: null != e ? e : void 0
+                        })
+                    }
+                    this._tracker.trackBufferLoadStart(),
+                    this._tracker.trackBufferURL(n, {
+                        bandwidth: 0
+                    });
+                    const s = document.createElement("source");
+                    return s.src = this._currentContent.getHLSURL(),
+                    s.type = X,
+                    this._player.appendChild(s),
+                    this._player.load(),
+                    !0
+                }
+                _loadUnprotectedTrack() {
+                    if (!this._player || !this._currentContent)
+                        return !1;
+                    const e = this._currentContent.getResolvedURL();
+                    return !!e && (Re.info("_loadUnprotectedTrack", this._currentContent.getURI()),
+                    this._tracker.trackBufferLoadStart(),
+                    this._tracker.trackBufferURL(e, {
+                        bandwidth: 0
+                    }),
+                    this._player.src = e,
+                    this._player.load(),
+                    !0)
+                }
+
+            function on(e, t) {
+            return {
+                responder: e,
+                props: t
+            }
+        }
